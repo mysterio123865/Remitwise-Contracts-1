@@ -36,4 +36,19 @@ impl RemitFlowContract {
         events::init(&env, &admin, &token);
         Ok(())
     }
+
+    /// Return the configured administrator address.
+    pub fn get_admin(env: Env) -> Result<Address, Error> {
+        storage::get_admin(&env).ok_or(Error::NotInitialized)
+    }
+
+    /// Return the configured token contract address.
+    pub fn get_token(env: Env) -> Result<Address, Error> {
+        storage::get_token(&env).ok_or(Error::NotInitialized)
+    }
+
+    /// Return the number of transfers created so far.
+    pub fn counter(env: Env) -> u64 {
+        storage::get_counter(&env)
+    }
 }
