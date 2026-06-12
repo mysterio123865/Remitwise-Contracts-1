@@ -15,10 +15,18 @@ cancel the transfer and reclaim the funds after the deadline passes.
 | `create_transfer(from, recipient, amount, expiry) -> u64` | Lock funds in escrow and return the transfer id. |
 | `claim_transfer(id, recipient)` | Recipient claims a pending, unexpired transfer. |
 | `cancel_transfer(id, from)` | Sender reclaims a pending transfer after expiry. |
+| `pause()` | Admin pauses creation of new transfers. |
+| `unpause()` | Admin re-enables creation of new transfers. |
 | `get_transfer(id) -> Transfer` | Read a stored transfer record. |
+| `get_transfers_paged(start_id, limit) -> Vec<Transfer>` | Read a batch of transfers. |
 | `get_status(id) -> Status` | Read just a transfer's lifecycle status. |
+| `is_expired(id) -> bool` | Check whether a transfer has passed its expiry. |
+| `is_paused() -> bool` | Report whether the contract is paused. |
 | `transfer_exists(id) -> bool` | Check whether a transfer id has been recorded. |
 | `count_by_status(status) -> u64` | Count created transfers with a given status. |
+| `count_for_sender(from) -> u64` | Count transfers funded by an address. |
+| `count_for_recipient(recipient) -> u64` | Count transfers targeting an address. |
+| `total_escrowed() -> i128` | Sum the amounts of all pending transfers. |
 | `get_admin() -> Address` | Return the configured admin. |
 | `get_token() -> Address` | Return the configured token. |
 | `counter() -> u64` | Return the number of transfers created. |
