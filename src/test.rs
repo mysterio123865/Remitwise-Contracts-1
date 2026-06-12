@@ -214,3 +214,19 @@ fn test_create_transfer_rejects_self_transfer() {
     let res = s.client.try_create_transfer(&s.from, &s.from, &100, &expiry);
     assert_eq!(res, Err(Ok(crate::error::Error::SameParty)));
 }
+
+#[test]
+fn test_count_by_status_tracks_lifecycle() {
+    let s = setup();
+    let expiry = s.env.ledger().timestamp() + 1_000;
+    let id1 = s.client.create_transfer(&s.from, &s.recipient, &100, &expiry);
+    let _id2 = s.client.create_transfer(&s.from, &s.recipient, &100, &expiry);
+
+    assert_eq!(s.client.count_by_status(&Status::Pending), 2);
+    assert_eq!(s.client.count_by_status(&Status::Claimed), 0);
+
+    s.client.claim_transfer(&id1, &s.recipient);
+
+    assert_eq!(s.client.count_by_status(&Status::Pending), 1);
+    assert_eq!(s.client.count_by_status(&Status::Claimed), 1);
+}
