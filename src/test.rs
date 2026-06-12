@@ -187,3 +187,10 @@ fn test_claim_twice_fails() {
     let res = s.client.try_claim_transfer(&id, &s.recipient);
     assert_eq!(res, Err(Ok(crate::error::Error::NotPending)));
 }
+
+#[test]
+fn test_get_unknown_transfer_fails() {
+    let s = setup();
+    let res = s.client.try_get_transfer(&999);
+    assert_eq!(res, Err(Ok(crate::error::Error::TransferNotFound)));
+}
