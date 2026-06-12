@@ -194,3 +194,15 @@ fn test_get_unknown_transfer_fails() {
     let res = s.client.try_get_transfer(&999);
     assert_eq!(res, Err(Ok(crate::error::Error::TransferNotFound)));
 }
+
+#[test]
+fn test_counter_increments_across_transfers() {
+    let s = setup();
+    let expiry = s.env.ledger().timestamp() + 1_000;
+    let id1 = s.client.create_transfer(&s.from, &s.recipient, &100, &expiry);
+    let id2 = s.client.create_transfer(&s.from, &s.recipient, &100, &expiry);
+
+    assert_eq!(id1, 1);
+    assert_eq!(id2, 2);
+    assert_eq!(s.client.counter(), 2);
+}
