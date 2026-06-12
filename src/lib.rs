@@ -107,6 +107,9 @@ impl RemitFlowContract {
         expiry: u64,
     ) -> Result<u64, Error> {
         let token = storage::get_token(&env).ok_or(Error::NotInitialized)?;
+        if storage::get_paused(&env) {
+            return Err(Error::ContractPaused);
+        }
         if amount <= 0 {
             return Err(Error::InvalidAmount);
         }
