@@ -17,4 +17,12 @@ pub enum Error {
     InvalidExpiry = 5,
     /// The transfer counter would overflow its u64 range.
     CounterOverflow = 6,
+    /// The caller is not authorized to act on this transfer.
+    Unauthorized = 7,
+    /// The transfer is not in the pending state.
+    NotPending = 8,
+    /// The transfer has passed its expiry timestamp.
+    Expired = 9,
+    /// The transfer has not yet reached its expiry timestamp.
+    NotExpired = 10,
 }
