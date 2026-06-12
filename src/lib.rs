@@ -195,6 +195,13 @@ impl RemitFlowContract {
         storage::has_transfer(&env, id)
     }
 
+    /// Return just the lifecycle status of the transfer with the given id.
+    pub fn get_status(env: Env, id: u64) -> Result<Status, Error> {
+        storage::get_transfer(&env, id)
+            .map(|transfer| transfer.status)
+            .ok_or(Error::TransferNotFound)
+    }
+
     /// Count how many created transfers currently hold the given status.
     ///
     /// Scans transfer ids `1..=counter` and tallies records whose
