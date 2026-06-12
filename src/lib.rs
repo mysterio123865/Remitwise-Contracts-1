@@ -235,6 +235,15 @@ impl RemitFlowContract {
             .ok_or(Error::TransferNotFound)
     }
 
+    /// Return true if the transfer with the given id has passed its expiry.
+    ///
+    /// Compares the transfer's `expiry` against the current ledger
+    /// timestamp; the lifecycle status is not considered.
+    pub fn is_expired(env: Env, id: u64) -> Result<bool, Error> {
+        let transfer = storage::get_transfer(&env, id).ok_or(Error::TransferNotFound)?;
+        Ok(env.ledger().timestamp() > transfer.expiry)
+    }
+
     /// Count how many created transfers currently hold the given status.
     ///
     /// Scans transfer ids `1..=counter` and tallies records whose
