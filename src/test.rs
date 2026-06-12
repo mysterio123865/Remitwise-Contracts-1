@@ -95,3 +95,11 @@ fn test_create_transfer_rejects_non_positive_amount() {
     let res = s.client.try_create_transfer(&s.from, &s.recipient, &0, &expiry);
     assert_eq!(res, Err(Ok(crate::error::Error::InvalidAmount)));
 }
+
+#[test]
+fn test_create_transfer_rejects_past_expiry() {
+    let s = setup();
+    s.env.ledger().with_mut(|l| l.timestamp = 5_000);
+    let res = s.client.try_create_transfer(&s.from, &s.recipient, &100, &1_000);
+    assert_eq!(res, Err(Ok(crate::error::Error::InvalidExpiry)));
+}
