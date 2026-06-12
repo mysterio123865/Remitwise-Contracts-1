@@ -213,6 +213,11 @@ impl RemitFlowContract {
         Ok(())
     }
 
+    /// Return true if the contract is currently paused.
+    pub fn is_paused(env: Env) -> bool {
+        storage::get_paused(&env)
+    }
+
     /// Fetch the full transfer record for the given id.
     pub fn get_transfer(env: Env, id: u64) -> Result<Transfer, Error> {
         storage::get_transfer(&env, id).ok_or(Error::TransferNotFound)
