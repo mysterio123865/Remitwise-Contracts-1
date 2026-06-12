@@ -227,6 +227,21 @@ fn test_create_transfer_rejects_oversized_amount() {
 }
 
 #[test]
+fn test_total_escrowed_tracks_pending_amounts() {
+    let s = setup();
+    let expiry = s.env.ledger().timestamp() + 1_000;
+
+    assert_eq!(s.client.total_escrowed(), 0);
+
+    let id1 = s.client.create_transfer(&s.from, &s.recipient, &300, &expiry);
+    s.client.create_transfer(&s.from, &s.recipient, &200, &expiry);
+    assert_eq!(s.client.total_escrowed(), 500);
+
+    s.client.claim_transfer(&id1, &s.recipient);
+    assert_eq!(s.client.total_escrowed(), 200);
+}
+
+#[test]
 fn test_count_for_sender_and_recipient() {
     let s = setup();
     let other = Address::generate(&s.env);
