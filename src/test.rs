@@ -227,6 +227,21 @@ fn test_create_transfer_rejects_oversized_amount() {
 }
 
 #[test]
+fn test_count_for_sender_and_recipient() {
+    let s = setup();
+    let other = Address::generate(&s.env);
+    let expiry = s.env.ledger().timestamp() + 1_000;
+
+    s.client.create_transfer(&s.from, &s.recipient, &100, &expiry);
+    s.client.create_transfer(&s.from, &other, &100, &expiry);
+
+    assert_eq!(s.client.count_for_sender(&s.from), 2);
+    assert_eq!(s.client.count_for_sender(&other), 0);
+    assert_eq!(s.client.count_for_recipient(&s.recipient), 1);
+    assert_eq!(s.client.count_for_recipient(&other), 1);
+}
+
+#[test]
 fn test_get_transfers_paged_respects_limit_and_start() {
     let s = setup();
     let expiry = s.env.ledger().timestamp() + 1_000;
