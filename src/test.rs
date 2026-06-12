@@ -87,3 +87,11 @@ fn test_create_transfer_moves_funds_to_escrow() {
     assert_eq!(transfer.status, Status::Pending);
     assert_eq!(transfer.recipient, s.recipient);
 }
+
+#[test]
+fn test_create_transfer_rejects_non_positive_amount() {
+    let s = setup();
+    let expiry = s.env.ledger().timestamp() + 1_000;
+    let res = s.client.try_create_transfer(&s.from, &s.recipient, &0, &expiry);
+    assert_eq!(res, Err(Ok(crate::error::Error::InvalidAmount)));
+}
