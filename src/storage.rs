@@ -46,3 +46,13 @@ pub fn get_admin(env: &Env) -> Option<Address> {
 pub fn has_admin(env: &Env) -> bool {
     env.storage().instance().has(&DataKey::Admin)
 }
+
+/// Store the token contract address in instance storage.
+pub fn set_token(env: &Env, token: &Address) {
+    env.storage().instance().set(&DataKey::Token, token);
+}
+
+/// Read the token contract address from instance storage.
+pub fn get_token(env: &Env) -> Option<Address> {
+    env.storage().instance().get(&DataKey::Token)
+}
