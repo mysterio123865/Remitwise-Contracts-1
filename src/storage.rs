@@ -56,3 +56,16 @@ pub fn set_token(env: &Env, token: &Address) {
 pub fn get_token(env: &Env) -> Option<Address> {
     env.storage().instance().get(&DataKey::Token)
 }
+
+/// Read the current transfer counter, defaulting to zero when unset.
+pub fn get_counter(env: &Env) -> u64 {
+    env.storage()
+        .instance()
+        .get(&DataKey::Counter)
+        .unwrap_or(0)
+}
+
+/// Persist a new value for the transfer counter.
+pub fn set_counter(env: &Env, value: u64) {
+    env.storage().instance().set(&DataKey::Counter, &value);
+}
