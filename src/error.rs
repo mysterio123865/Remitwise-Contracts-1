@@ -15,4 +15,6 @@ pub enum Error {
     InvalidAmount = 4,
     /// The supplied expiry is not in the future.
     InvalidExpiry = 5,
+    /// The transfer counter would overflow its u64 range.
+    CounterOverflow = 6,
 }
