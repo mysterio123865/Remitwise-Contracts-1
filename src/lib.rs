@@ -69,6 +69,31 @@ impl RemitFlowContract {
         storage::get_counter(&env)
     }
 
+    /// Pause the contract, blocking creation of new transfers.
+    ///
+    /// Only the administrator may pause. Claims and cancellations of
+    /// existing transfers remain available while paused.
+    pub fn pause(env: Env) -> Result<(), Error> {
+        let admin = storage::get_admin(&env).ok_or(Error::NotInitialized)?;
+        admin.require_auth();
+        storage::set_paused(&env, true);
+        storage::extend_instance(&env);
+        events::paused(&env, &admin);
+        Ok(())
+    }
+
+    /// Unpause the contract, re-enabling creation of new transfers.
+    ///
+    /// Only the administrator may unpause.
+    pub fn unpause(env: Env) -> Result<(), Error> {
+        let admin = storage::get_admin(&env).ok_or(Error::NotInitialized)?;
+        admin.require_auth();
+        storage::set_paused(&env, false);
+        storage::extend_instance(&env);
+        events::unpaused(&env, &admin);
+        Ok(())
+    }
+
     /// Create a new escrowed transfer from `from` to `recipient`.
     ///
     /// Transfers `amount` of the configured token from `from` into the
