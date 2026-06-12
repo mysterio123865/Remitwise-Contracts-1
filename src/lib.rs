@@ -130,4 +130,36 @@ impl RemitFlowContract {
         events::claimed(&env, id, &recipient, amount);
         Ok(())
     }
+
+    /// Cancel a pending transfer after expiry, refunding the sender.
+    ///
+    /// Only the original sender may cancel, the transfer must still be
+    /// pending, and the expiry must have passed.
+    pub fn cancel_transfer(env: Env, id: u64, from: Address) -> Result<(), Error> {
+        let mut transfer = storage::get_transfer(&env, id).ok_or(Error::TransferNotFound)?;
+        if transfer.from != from {
+            return Err(Error::Unauthorized);
+        }
+        if transfer.status != Status::Pending {
+            return Err(Error::NotPending);
+        }
+        if env.ledger().timestamp() <= transfer.expiry {
+            return Err(Error::NotExpired);
+        }
+        from.require_auth();
+
+        let token = storage::get_token(&env).ok_or(Error::NotInitialized)?;
+        token::Client::new(&env, &token).transfer(
+            &env.current_contract_address(),
+            &from,
+            &transfer.amount,
+        );
+
+        transfer.status = Status::Cancelled;
+        let amount = transfer.amount;
+        storage::set_transfer(&env, &transfer);
+        storage::extend_instance(&env);
+        events::cancelled(&env, id, &from, amount);
+        Ok(())
+    }
 }
