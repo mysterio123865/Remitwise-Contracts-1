@@ -19,3 +19,24 @@ cancel the transfer and reclaim the funds after the deadline passes.
 | `get_admin() -> Address` | Return the configured admin. |
 | `get_token() -> Address` | Return the configured token. |
 | `counter() -> u64` | Return the number of transfers created. |
+
+## Build
+
+Build the optimized WASM with the pinned toolchain:
+
+```sh
+make build
+# or directly:
+cargo build --target wasm32-unknown-unknown --release
+```
+
+Run the test suite:
+
+```sh
+make test
+# or directly:
+cargo test
+```
+
+The compiled artifact is written to
+`target/wasm32-unknown-unknown/release/remitflow_contract.wasm`.
