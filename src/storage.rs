@@ -31,3 +31,18 @@ pub fn extend_instance(env: &Env) {
         .instance()
         .extend_ttl(INSTANCE_BUMP_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 }
+
+/// Store the administrator address in instance storage.
+pub fn set_admin(env: &Env, admin: &Address) {
+    env.storage().instance().set(&DataKey::Admin, admin);
+}
+
+/// Read the administrator address from instance storage.
+pub fn get_admin(env: &Env) -> Option<Address> {
+    env.storage().instance().get(&DataKey::Admin)
+}
+
+/// Returns true if the administrator has already been configured.
+pub fn has_admin(env: &Env) -> bool {
+    env.storage().instance().has(&DataKey::Admin)
+}
