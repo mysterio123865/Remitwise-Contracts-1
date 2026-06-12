@@ -11,4 +11,8 @@ pub enum Error {
     NotInitialized = 2,
     /// No transfer exists for the supplied id.
     TransferNotFound = 3,
+    /// The supplied amount was not strictly positive.
+    InvalidAmount = 4,
+    /// The supplied expiry is not in the future.
+    InvalidExpiry = 5,
 }
