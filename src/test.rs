@@ -227,6 +227,14 @@ fn test_create_transfer_rejects_oversized_amount() {
 }
 
 #[test]
+fn test_create_transfer_rejects_far_future_expiry() {
+    let s = setup();
+    let expiry = s.env.ledger().timestamp() + crate::MAX_EXPIRY_WINDOW + 1;
+    let res = s.client.try_create_transfer(&s.from, &s.recipient, &100, &expiry);
+    assert_eq!(res, Err(Ok(crate::error::Error::ExpiryTooFar)));
+}
+
+#[test]
 fn test_total_escrowed_tracks_pending_amounts() {
     let s = setup();
     let expiry = s.env.ledger().timestamp() + 1_000;
