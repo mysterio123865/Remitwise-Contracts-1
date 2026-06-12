@@ -206,3 +206,11 @@ fn test_counter_increments_across_transfers() {
     assert_eq!(id2, 2);
     assert_eq!(s.client.counter(), 2);
 }
+
+#[test]
+fn test_create_transfer_rejects_self_transfer() {
+    let s = setup();
+    let expiry = s.env.ledger().timestamp() + 1_000;
+    let res = s.client.try_create_transfer(&s.from, &s.from, &100, &expiry);
+    assert_eq!(res, Err(Ok(crate::error::Error::SameParty)));
+}
