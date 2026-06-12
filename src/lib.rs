@@ -253,6 +253,25 @@ impl RemitFlowContract {
         page
     }
 
+    /// Return the total token amount currently held in escrow.
+    ///
+    /// Sums the amounts of every transfer still in [`Status::Pending`] across
+    /// ids `1..=counter`. Uses saturating addition so the total never wraps.
+    pub fn total_escrowed(env: Env) -> i128 {
+        let last = storage::get_counter(&env);
+        let mut total: i128 = 0;
+        let mut id = 1u64;
+        while id <= last {
+            if let Some(transfer) = storage::get_transfer(&env, id) {
+                if transfer.status == Status::Pending {
+                    total = total.saturating_add(transfer.amount);
+                }
+            }
+            id += 1;
+        }
+        total
+    }
+
     /// Return true if the transfer with the given id has passed its expiry.
     ///
     /// Compares the transfer's `expiry` against the current ledger
