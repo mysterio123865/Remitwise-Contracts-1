@@ -89,6 +89,9 @@ stellar contract invoke \
 ## Aggregate behaviour
 
 Aggregate helpers now use saturating fallbacks so counters and tallies avoid overflowing in extreme cases. This keeps transfer counts and escrow totals bounded even when many transfers are recorded.
+## Global escrow cap
+
+The contract now enforces a global cap on the total escrowed amount so the system does not accumulate an unbounded balance. Creating a transfer that would exceed this cap returns an explicit error.
 
 ## Transfer lifecycle
 
