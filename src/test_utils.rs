@@ -6,6 +6,35 @@ use soroban_sdk::{Address, Env};
 
 use crate::{RemitFlowContract, RemitFlowContractClient};
 
+/// Assert that a generated client's `try_*` call returned a contract error.
+///
+/// Soroban wraps contract errors in an outer invocation result, which makes a
+/// plain `assert_eq!` concise but difficult to diagnose when the call succeeds
+/// or fails at the host layer. This helper reports the operation being checked
+/// and distinguishes all of those outcomes.
+pub(crate) fn assert_contract_error<T, E, H>(
+    result: Result<Result<T, E>, Result<E, H>>,
+    expected: E,
+    operation: &str,
+) where
+    T: core::fmt::Debug,
+    E: core::fmt::Debug + PartialEq,
+    H: core::fmt::Debug,
+{
+    match result {
+        Err(Ok(actual)) => assert_eq!(
+            actual, expected,
+            "{operation}: contract returned an unexpected error"
+        ),
+        Ok(value) => panic!(
+            "{operation}: expected contract error {expected:?}, but the call succeeded with {value:?}"
+        ),
+        Err(Err(host_error)) => panic!(
+            "{operation}: expected contract error {expected:?}, but invocation failed with host error {host_error:?}"
+        ),
+    }
+}
+
 pub(crate) const DEFAULT_SENDER_BALANCE: i128 = 1_000;
 pub(crate) const DEFAULT_TRANSFER_AMOUNT: i128 = 400;
 pub(crate) const DEFAULT_EXPIRY_OFFSET: u64 = 1_000;
@@ -66,5 +95,43 @@ impl<'a> TestFixture<'a> {
             &DEFAULT_TRANSFER_AMOUNT,
             &self.future_expiry(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::assert_contract_error;
+
+    #[test]
+    fn assert_contract_error_accepts_the_expected_error() {
+        let result: Result<Result<(), u32>, Result<u32, &str>> = Err(Ok(7));
+
+        assert_contract_error(result, 7, "create transfer");
+    }
+
+    #[test]
+    #[should_panic(expected = "create transfer: contract returned an unexpected error")]
+    fn assert_contract_error_reports_context_for_a_mismatch() {
+        let result: Result<Result<(), u32>, Result<u32, &str>> = Err(Ok(8));
+
+        assert_contract_error(result, 7, "create transfer");
+    }
+
+    #[test]
+    #[should_panic(expected = "claim transfer: expected contract error 7, but the call succeeded")]
+    fn assert_contract_error_reports_an_unexpected_success() {
+        let result: Result<Result<u64, u32>, Result<u32, &str>> = Ok(Ok(1));
+
+        assert_contract_error(result, 7, "claim transfer");
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "cancel transfer: expected contract error 7, but invocation failed with host error \"budget exhausted\""
+    )]
+    fn assert_contract_error_reports_a_host_failure() {
+        let result: Result<Result<(), u32>, Result<u32, &str>> = Err(Err("budget exhausted"));
+
+        assert_contract_error(result, 7, "cancel transfer");
     }
 }

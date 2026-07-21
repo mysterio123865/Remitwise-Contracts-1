@@ -5,7 +5,8 @@ use soroban_sdk::token::{StellarAssetClient, TokenClient};
 use soroban_sdk::{vec, Address, Env};
 
 use crate::test_utils::{
-    TestFixture, DEFAULT_EXPIRY_OFFSET, DEFAULT_SENDER_BALANCE, DEFAULT_TRANSFER_AMOUNT,
+    assert_contract_error, TestFixture, DEFAULT_EXPIRY_OFFSET, DEFAULT_SENDER_BALANCE,
+    DEFAULT_TRANSFER_AMOUNT,
 };
 use crate::types::{
     BatchOperation, BatchOperationResult, ClaimTransferOperation, CreateTransferOperation, Status,
@@ -124,7 +125,11 @@ fn test_batch_operations_rolls_back_on_partial_failure() {
 
     let result = s.client.try_batch_operations(&operations);
 
-    assert_eq!(result, Err(Ok(crate::error::Error::SameParty)));
+    assert_contract_error(
+        result,
+        crate::error::Error::SameParty,
+        "batch operations should roll back when an operation fails",
+    );
     assert_eq!(s.client.counter(), 0);
     assert!(!s.client.transfer_exists(&1));
     assert_eq!(s.token_client().balance(&s.from), DEFAULT_SENDER_BALANCE);
@@ -153,7 +158,11 @@ fn test_common_setup_initializes_and_funds_contract() {
 fn test_initialize_twice_fails() {
     let s = setup();
     let res = s.client.try_initialize(&s.admin, &s.token);
-    assert_eq!(res, Err(Ok(crate::error::Error::AlreadyInitialized)));
+    assert_contract_error(
+        res,
+        crate::error::Error::AlreadyInitialized,
+        "initializing an initialized contract",
+    );
 }
 
 #[test]
@@ -187,7 +196,11 @@ fn test_create_transfer_rejects_non_positive_amount() {
     let res = s
         .client
         .try_create_transfer(&s.from, &s.recipient, &0, &expiry);
-    assert_eq!(res, Err(Ok(crate::error::Error::InvalidAmount)));
+    assert_contract_error(
+        res,
+        crate::error::Error::InvalidAmount,
+        "creating a zero-amount transfer",
+    );
 }
 
 #[test]
@@ -197,7 +210,11 @@ fn test_create_transfer_rejects_past_expiry() {
     let res = s
         .client
         .try_create_transfer(&s.from, &s.recipient, &100, &1_000);
-    assert_eq!(res, Err(Ok(crate::error::Error::InvalidExpiry)));
+    assert_contract_error(
+        res,
+        crate::error::Error::InvalidExpiry,
+        "creating a transfer with a past expiry",
+    );
 }
 
 #[test]

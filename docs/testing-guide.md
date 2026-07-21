@@ -167,6 +167,28 @@ Prefer these defaults when the values are not relevant to the behavior under
 test. Use the fixture's public test fields and contract client directly when a
 test needs non-default actors, amounts, expiry, or ledger state. Keep helpers
 limited to setup and avoid hiding the action or assertion that defines a test.
+
+## Contract error assertions
+
+Use `assert_contract_error` from `src/test_utils.rs` when checking the result of
+a generated client's `try_*` method. It understands Soroban's nested invocation
+result and produces a diagnostic that identifies whether the contract returned
+the wrong error, the call unexpectedly succeeded, or the host invocation
+failed. Always provide a short operation description so failures retain the
+intent of the test.
+
+```rust
+let result = fixture.client.try_claim_transfer(&id, &stranger);
+
+assert_contract_error(
+    result,
+    crate::error::Error::Unauthorized,
+    "claiming a transfer as a non-recipient",
+);
+```
+
+Use ordinary `assert_eq!`, `assert!`, and `assert_ne!` for values that are not
+contract invocation errors.
 RemitFlow's tests are Rust unit tests backed by the Soroban SDK test utilities.
 Run the complete suite from the repository root:
 
